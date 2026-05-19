@@ -107,11 +107,15 @@ async function queryGemini(diagnosticText) {
 
   const data = await response.json();
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-  // Strip markdown code fences if Gemini wraps output
+  console.log("[gemini-raw]", JSON.stringify(raw).substring(0, 500));
+  console.log("[gemini-finish]", data.candidates?.[0]?.finishReason);
   const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}") + 1;
-  if (start === -1 || end === 0) throw new Error("Gemini returned no valid JSON");
+  if (start === -1 || end === 0) {
+    console.log("[gemini-full]", JSON.stringify(data).substring(0, 1000));
+    throw new Error("Gemini returned no valid JSON");
+  }
   return JSON.parse(cleaned.slice(start, end));
 }
 
