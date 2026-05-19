@@ -27,7 +27,9 @@ setInterval(() => {
 
 // ─── Gemini ─────────────────────────────────────────────────────────────────
 
-const REPAIR_SYSTEM_PROMPT = `You are the Pronto PC repair engine. You receive Windows system diagnostic data and return a structured JSON repair plan.
+const REPAIR_SYSTEM_PROMPT = `CRITICAL: Your entire response must be a single JSON object. No text before it. No text after it. No markdown. No explanation. Start with { and end with }.
+
+You are the Pronto PC repair engine. You receive Windows system diagnostic data and return a structured JSON repair plan.
 
 Rules:
 - Only recommend safe, reversible actions
@@ -105,10 +107,12 @@ async function queryGemini(diagnosticText) {
 
   const data = await response.json();
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}") + 1;
+  // Strip markdown code fences if Gemini wraps output
+  const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}") + 1;
   if (start === -1 || end === 0) throw new Error("Gemini returned no valid JSON");
-  return JSON.parse(raw.slice(start, end));
+  return JSON.parse(cleaned.slice(start, end));
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
