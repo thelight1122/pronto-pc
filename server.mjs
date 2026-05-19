@@ -9,8 +9,8 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHmac } from "node:crypto";
 import nodemailer from "nodemailer";
+import Stripe from "stripe";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import crypto from "node:crypto";
 
@@ -247,25 +247,7 @@ function handleProgressGet(req, res, session) {
 
 // ─── Stripe webhook ───────────────────────────────────────────────────────────
 
-function verifyStripeSignature(rawBody, sigHeader) {
-  if (!STRIPE_WEBHOOK_SECRET) return true; // skip verification in dev
-  const parts = sigHeader.split(",").reduce((acc, part) => {
-    const [k, v] = part.split("=");
-    acc[k] = v;
-    return acc;
-  }, {});
-  const timestamp = parts["t"];
-  const sig = parts["v1"];
-  if (!timestamp || !sig) return false;
-  const payload = `${timestamp}.${rawBody}`;
-  const signingKey = STRIPE_WEBHOOK_SECRET.startsWith("whsec_")
-    ? STRIPE_WEBHOOK_SECRET.slice(6)
-    : STRIPE_WEBHOOK_SECRET;
-  const expected = createHmac("sha256", signingKey)
-    .update(payload, "utf8")
-    .digest("hex");
-  return expected === sig;
-}
+const stripeClient = STRIPE_WEBHOOK_SECRET ? new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-04-10" }) : null;
 
 async function sendDeliveryEmail(customerEmail, customerName) {
   const transporter = nodemailer.createTransport({
@@ -340,19 +322,20 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#FDFAF4;margin:0;p
 async function handleStripeWebhook(req, res) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
-  const rawBody = Buffer.concat(chunks).toString("utf8");
+  const rawBody = Buffer.concat(chunks);
   const sig = req.headers["stripe-signature"] || "";
-
-  if (!verifyStripeSignature(rawBody, sig)) {
-    console.warn("[webhook] Signature verification failed");
-    return json(res, 400, { ok: false, error: "Invalid signature" });
-  }
 
   let event;
   try {
-    event = JSON.parse(rawBody);
-  } catch {
-    return json(res, 400, { ok: false, error: "Invalid JSON" });
+    if (STRIPE_WEBHOOK_SECRET) {
+      const stripe = new Stripe("", { apiVersion: "2024-04-10" });
+      event = stripe.webhooks.constructEvent(rawBody, sig, STRIPE_WEBHOOK_SECRET);
+    } else {
+      event = JSON.parse(rawBody.toString("utf8"));
+    }
+  } catch (err) {
+    console.warn("[webhook] Verification failed:", err.message);
+    return json(res, 400, { ok: false, error: "Invalid signature" });
   }
 
   console.log(`[webhook] Event: ${event.type}`);
