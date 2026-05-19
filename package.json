@@ -1,10 +1,9 @@
 {
+  "name": "pronto-pc",
+  "type": "module",
   "main": "server.mjs",
   "dependencies": {
-    "nodemailer": "^6.9.13",
     "stripe": "^14.25.0"
   },
-  "version": "1.0.0",
-  "name": "pronto-pc",
-  "type": "module"
+  "version": "1.0.0"
 }

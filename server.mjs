@@ -9,7 +9,6 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import nodemailer from "nodemailer";
 import Stripe from "stripe";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import crypto from "node:crypto";
@@ -18,12 +17,9 @@ const PORT = process.env.PORT || 8080;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.5-flash";
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
-const SMTP_HOST     = process.env.SMTP_HOST     || "smtp.gmail.com";
-const SMTP_PORT     = parseInt(process.env.SMTP_PORT || "587");
-const SMTP_USER     = process.env.SMTP_USER     || "";
-const SMTP_PASS     = process.env.SMTP_PASS     || "";
-const FROM_EMAIL    = process.env.FROM_EMAIL    || "support@prontopc.online";
-const DOWNLOAD_URL  = process.env.DOWNLOAD_URL  || "https://prontopc.online/download/pronto-agent.py";
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const FROM_EMAIL     = process.env.FROM_EMAIL    || "support@prontopc.online";
+const DOWNLOAD_URL   = process.env.DOWNLOAD_URL  || "https://prontopc.online/download/pronto-agent.py";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 // In-memory for MVP. Cloud Run min-instances=1 keeps this alive.
@@ -250,14 +246,6 @@ function handleProgressGet(req, res, session) {
 const stripeClient = STRIPE_WEBHOOK_SECRET ? new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-04-10" }) : null;
 
 async function sendDeliveryEmail(customerEmail, customerName) {
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: true,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-    tls: { rejectUnauthorized: false }
-  });
-
   const displayName = customerName || "there";
 
   const html = `<!DOCTYPE html>
@@ -310,14 +298,22 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#FDFAF4;margin:0;p
 </div>
 </body></html>`;
 
-  await transporter.sendMail({
-    from: `"Pronto PC" <${FROM_EMAIL}>`,
-    to: customerEmail,
-    subject: "Your Pronto PC repair agent is ready to download",
-    html
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: `Pronto PC <${FROM_EMAIL}>`,
+      to: [customerEmail],
+      subject: "Your Pronto PC repair agent is ready to download",
+      html
+    })
   });
-
-  console.log(`[webhook] Delivery email sent to ${customerEmail}`);
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Resend API error");
+  console.log(`[webhook] Delivery email sent to ${customerEmail} via Resend — id: ${result.id}`);
 }
 
 async function handleStripeWebhook(req, res) {
