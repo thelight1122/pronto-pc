@@ -88,8 +88,11 @@ async function queryGemini(diagnosticText) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: REPAIR_SYSTEM_PROMPT }] },
-      contents: [{ parts: [{ text: `DIAGNOSTIC REPORT:\n${diagnosticText}` }] }],
+      contents: [{
+        parts: [{
+          text: `${REPAIR_SYSTEM_PROMPT}\n\nDIAGNOSTIC REPORT:\n${diagnosticText}`
+        }]
+      }],
       generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
     }),
     signal: AbortSignal.timeout(60_000)
@@ -102,11 +105,9 @@ async function queryGemini(diagnosticText) {
 
   const data = await response.json();
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}") + 1;
   if (start === -1 || end === 0) throw new Error("Gemini returned no valid JSON");
-
   return JSON.parse(raw.slice(start, end));
 }
 
