@@ -6,6 +6,10 @@
  */
 
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import crypto from "node:crypto";
 
 const PORT = process.env.PORT || 8080;
@@ -231,6 +235,18 @@ function handleProgressGet(req, res, session) {
 
 // ─── Server ──────────────────────────────────────────────────────────────────
 
+
+function serveHtml(res, filename) {
+  const filePath = path.join(__dirname, filename);
+  try {
+    const html = fs.readFileSync(filePath, "utf8");
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(html);
+  } catch {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Page not found");
+  }
+}
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = url.pathname.replace(/\/$/, "");
@@ -253,6 +269,8 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
+    if (method === "GET" && pathname === "/terms") return serveHtml(res, "terms.html");
+    if (method === "GET" && pathname === "/report") return serveHtml(res, "confirm.html");
     if (method === "POST" && pathname === "/api/repair-plan") return await handleRepairPlan(req, res);
     if (method === "POST" && pathname === "/api/repair-progress") return await handleProgressPost(req, res);
 

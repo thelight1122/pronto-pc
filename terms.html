@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Agreement — Pronto PC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#1A1917;--sand:#F5F0E8;--amber:#C8892A;--amber-bg:rgba(200,137,42,.08);--warm-white:#FDFAF4;--muted:#6B6560;--border:#E2DBD0;--green:#2A7A4A;--green-bg:rgba(42,122,74,.08);--red:#C0392B;--red-bg:rgba(192,57,43,.07);--radius:10px}
+body{font-family:'DM Sans',sans-serif;background:var(--warm-white);color:var(--ink);font-size:16px;line-height:1.65;padding-bottom:140px}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 5%;border-bottom:1px solid var(--border);background:var(--warm-white);position:sticky;top:0;z-index:100}
+.logo{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;letter-spacing:-0.5px;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--amber)}
+.nav-step{font-size:.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.progress-bar{background:var(--sand);border-bottom:1px solid var(--border);padding:.75rem 5%}
+.steps{display:flex;align-items:center;max-width:560px}
+.step-item{display:flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:500;color:var(--muted)}
+.step-item.active{color:var(--amber);font-weight:600}
+.step-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;background:var(--border);color:var(--muted)}
+.step-item.active .step-dot{background:var(--amber);color:#fff}
+.step-line{flex:1;height:1px;background:var(--border);min-width:24px;margin:0 .4rem}
+.page-header{max-width:720px;margin:0 auto;padding:3rem 5% 2rem}
+.page-header .eyebrow{font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:.65rem}
+.page-header h1{font-family:'Fraunces',serif;font-size:clamp(1.7rem,3.5vw,2.4rem);font-weight:700;line-height:1.2;letter-spacing:-.5px;margin-bottom:.75rem}
+.page-header p{font-size:1rem;color:var(--muted);line-height:1.7;max-width:560px}
+.plain-summary{max-width:720px;margin:0 auto 2rem;padding:0 5%}
+.plain-summary h2{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;margin-bottom:1rem}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.summary-card{border-radius:12px;padding:1.1rem 1.25rem;display:flex;gap:.85rem;align-items:flex-start}
+.summary-card.will{background:var(--green-bg);border:1px solid rgba(42,122,74,.18)}
+.summary-card.wont{background:var(--red-bg);border:1px solid rgba(192,57,43,.15)}
+.summary-card svg{width:18px;height:18px;flex-shrink:0;margin-top:2px}
+.summary-card.will svg{color:var(--green)}
+.summary-card.wont svg{color:var(--red)}
+.summary-card p{font-size:.88rem;line-height:1.55;color:var(--ink)}
+.summary-card strong{font-weight:600}
+.divider{height:1px;background:var(--border);max-width:720px;margin:2rem auto;margin-left:5%;margin-right:5%}
+.tos-body{max-width:720px;margin:0 auto;padding:0 5%}
+.tos-section{margin-bottom:2rem}
+.tos-section h3{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.sec-num{font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500;color:var(--amber);background:var(--amber-bg);padding:.15rem .45rem;border-radius:4px}
+.tos-section p,.tos-section li{font-size:.88rem;color:var(--muted);line-height:1.7}
+.tos-section ul{padding-left:1.25rem;display:flex;flex-direction:column;gap:.35rem}
+.tos-section strong{color:var(--ink);font-weight:600}
+.highlight{background:var(--amber-bg);border-left:3px solid var(--amber);padding:.6rem .85rem;border-radius:0 6px 6px 0;font-size:.88rem;color:var(--ink);margin:.75rem 0;line-height:1.65}
+.acceptance-zone{max-width:720px;margin:0 auto 1rem;padding:0 5%}
+.checkbox-row{display:flex;align-items:flex-start;gap:.85rem;background:var(--sand);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;cursor:pointer;transition:border-color .15s}
+.checkbox-row:hover{border-color:var(--amber)}
+.checkbox-row input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--amber);cursor:pointer}
+.checkbox-row label{font-size:.9rem;line-height:1.6;color:var(--ink);cursor:pointer}
+.cta-footer{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--warm-white);border-top:1px solid var(--border);padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;box-shadow:0 -4px 24px rgba(26,25,23,.07)}
+.cancel-btn{background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;padding:.8rem 1.5rem;border-radius:var(--radius);cursor:pointer;transition:border-color .15s,color .15s;text-decoration:none;white-space:nowrap}
+.cancel-btn:hover{border-color:var(--ink);color:var(--ink)}
+.accept-btn{background:var(--amber);color:#fff;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;padding:.85rem 2.25rem;border-radius:var(--radius);border:none;cursor:pointer;transition:background .15s,opacity .15s;white-space:nowrap;opacity:.45;pointer-events:none}
+.accept-btn.enabled{opacity:1;pointer-events:auto}
+.accept-btn.enabled:hover{background:#A87020}
+.accept-btn small{display:block;font-weight:400;font-size:.73rem;opacity:.85;margin-top:1px}
+.cta-note{font-size:.78rem;color:var(--muted);text-align:center;flex:1}
+@media(max-width:600px){.summary-grid{grid-template-columns:1fr}.cta-footer{flex-direction:column;gap:.75rem;padding:.85rem 5%}.accept-btn,.cancel-btn{width:100%;text-align:center}.cta-note{display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="https://prontopc.online" class="logo">Pronto <span>PC</span></a>
+  <div class="nav-step">Step 1 of 2 — Review &amp; Accept</div>
+</nav>
+<div class="progress-bar">
+  <div class="steps">
+    <div class="step-item active"><div class="step-dot">1</div>Review Terms</div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-dot">2</div>Secure Payment</div>
+    <div class="step-line"></div>
+    <div class="step-item"><div class="step-dot">3</div>Repair Runs</div>
+  </div>
+</div>
+<div class="page-header">
+  <div class="eyebrow">Service Agreement</div>
+  <h1>Before we touch your PC, here's exactly what we'll do.</h1>
+  <p>Read this once. It's short, it's plain English, and it tells you everything that will and won't happen during your repair. No surprises. No fine print tricks.</p>
+</div>
+<div class="plain-summary">
+  <h2>Plain-language summary</h2>
+  <div class="summary-grid">
+    <div class="summary-card will"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><p><strong>We will clean</strong> temporary files, browser caches, and Windows junk that's safe to remove.</p></div>
+    <div class="summary-card wont"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg><p><strong>We will never delete</strong> your documents, photos, music, videos, or any personal files.</p></div>
+    <div class="summary-card will"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><p><strong>We will optimize</strong> startup programs, registry entries, and system performance settings.</p></div>
+    <div class="summary-card wont"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg><p><strong>We will never install</strong> third-party software, toolbars, or any programs you didn't ask for.</p></div>
+    <div class="summary-card will"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><p><strong>We will leave</strong> a complete, timestamped audit report on your Desktop listing every action taken.</p></div>
+    <div class="summary-card wont"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg><p><strong>We will never collect</strong> your passwords, financial data, personal files, or browsing history.</p></div>
+    <div class="summary-card will"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><p><strong>We will diagnose</strong> your system first and show you the plan before any repair actions execute.</p></div>
+    <div class="summary-card wont"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg><p><strong>We will never touch</strong> System32, driver files, or anything that could affect Windows stability.</p></div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="tos-body">
+  <div class="tos-section"><h3><span class="sec-num">01</span> What This Service Is</h3><p>Pronto PC is an automated AI-assisted Windows repair service operated by <strong>5D Service Solutions Global LLC</strong>. Upon payment, you will download and run a lightweight repair agent that scans your system, generates a repair plan, and executes approved actions — all documented in a report delivered to your Desktop.</p><div class="highlight">This is a one-time, flat-rate service for $39 USD. There is no subscription, no recurring charge, and no upsell after payment.</div></div>
+  <div class="tos-section"><h3><span class="sec-num">02</span> What the Agent Will Do</h3><p>The repair agent will perform only these categories of action:</p><ul><li>Remove temporary and cached files in standard Windows temp locations</li><li>Clear browser cache files (Chrome, Edge, Firefox if present)</li><li>Disable or review unnecessary startup programs</li><li>Clean orphaned or invalid Windows registry entries</li><li>Run Windows system integrity checks (SFC) when appropriate</li><li>Generate a full audit report and save it to your Desktop</li></ul><p style="margin-top:.75rem">Every action will be documented before it executes. You will see a summary of findings before the repair runs.</p></div>
+  <div class="tos-section"><h3><span class="sec-num">03</span> What the Agent Will Never Do</h3><ul><li>Access, move, copy, or delete personal files (documents, photos, music, videos)</li><li>Collect or transmit passwords, financial data, or any personal information</li><li>Install third-party applications, toolbars, or browser extensions</li><li>Modify system drivers, core Windows files, or hardware firmware</li><li>Make any changes that cannot be reversed or documented</li><li>Access files outside standard Windows system directories and browser cache paths</li></ul></div>
+  <div class="tos-section"><h3><span class="sec-num">04</span> Your 30-Day Guarantee</h3><p>If any issue arises that is documented in your audit report within 30 days of your repair, we will perform a second repair at no charge. Email <strong>support@prontopc.online</strong> with your audit report attached.</p><div class="highlight">We cannot guarantee outcomes for hardware failures, pre-existing software corruption, or issues unrelated to the actions in your audit report. If our diagnosis finds a hardware problem, we will tell you plainly in the report — that diagnosis is included at no extra charge.</div></div>
+  <div class="tos-section"><h3><span class="sec-num">05</span> Refund Policy</h3><p>If the repair agent fails to run, crashes before completion, or produces no audit report, you are entitled to a full refund. Email <strong>support@prontopc.online</strong> within 7 days with your payment confirmation.</p><p style="margin-top:.6rem">Refunds are <strong>not</strong> available if the repair completed and an audit report was delivered. In that case, our re-repair guarantee applies instead.</p></div>
+  <div class="tos-section"><h3><span class="sec-num">06</span> Data &amp; Privacy</h3><p>The repair agent does not send your personal files, browsing history, or document content to any server. Diagnostic information (disk usage, startup program names, event log error counts) is transmitted only to generate your repair plan and is not stored after your session ends. No personally identifiable information is sold or shared with third parties.</p></div>
+  <div class="tos-section"><h3><span class="sec-num">07</span> AEGIS Governance</h3><p>This service operates under the <strong>AEGIS Alignment Framework</strong> by 5D Service Solutions Global LLC. Every action is governed by four commitments: full transparency, your sovereignty over your machine, an append-only unalterable audit trail, and no force or deceptive pricing. These are enforced at the code level.</p></div>
+  <div class="tos-section"><h3><span class="sec-num">08</span> Limitation of Liability</h3><p>5D Service Solutions Global LLC's total liability for any claim shall not exceed the amount paid ($39). We are not liable for pre-existing conditions, data loss from hardware failure, or any consequential damages. <strong>We strongly recommend backing up important files before any repair service.</strong></p></div>
+  <div class="tos-section"><h3><span class="sec-num">09</span> Governing Law</h3><p>This agreement is governed by the laws of the State of Arizona, United States. Any disputes shall be resolved in Mohave County, Arizona.</p></div>
+  <div class="tos-section"><h3><span class="sec-num">10</span> Your Authorization</h3><p>By accepting below, you confirm that you are the owner or authorized administrator of the computer on which this repair will run, that you are 18 years of age or older, and that you have read and understood this agreement.</p></div>
+</div>
+<div class="divider"></div>
+<div class="acceptance-zone">
+  <div class="checkbox-row" onclick="toggleCheck()">
+    <input type="checkbox" id="agreeCheck" onchange="updateBtn()">
+    <label for="agreeCheck">I have read and agree to the Pronto PC Service Agreement above. I understand what the repair agent will and will not do, and I authorize it to run on my PC after payment is confirmed. I confirm I am the owner or authorized administrator of this computer.</label>
+  </div>
+</div>
+<div class="cta-footer">
+  <a href="https://prontopc.online" class="cancel-btn">← Cancel</a>
+  <div class="cta-note" id="ctaNote">Check the box above to continue to payment</div>
+  <button class="accept-btn" id="acceptBtn" onclick="goToPayment()">Accept &amp; Pay $39 →<small>Secure checkout · No subscription</small></button>
+</div>
+<script>
+const STRIPE="https://buy.stripe.com/9B6fZi0F53MgeyO97c9Ve01";
+function toggleCheck(){const c=document.getElementById('agreeCheck');c.checked=!c.checked;updateBtn()}
+function updateBtn(){const c=document.getElementById('agreeCheck').checked,b=document.getElementById('acceptBtn'),n=document.getElementById('ctaNote');if(c){b.classList.add('enabled');n.textContent="You'll be charged $39 once at checkout. No subscription."}else{b.classList.remove('enabled');n.textContent="Check the box above to continue to payment"}}
+document.getElementById('agreeCheck').addEventListener('click',e=>{e.stopPropagation();updateBtn()});
+function goToPayment(){if(!document.getElementById('agreeCheck').checked)return;const b=document.getElementById('acceptBtn');b.textContent="Redirecting to secure checkout…";b.style.opacity='.7';setTimeout(()=>{window.location.href=STRIPE},400)}
+</script>
+</body>
+</html>
