@@ -95,7 +95,7 @@ async function queryGemini(diagnosticText) {
           text: `${REPAIR_SYSTEM_PROMPT}\n\nDIAGNOSTIC REPORT:\n${diagnosticText}`
         }]
       }],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 2048, responseMimeType: "application/json" }
+      generationConfig: { temperature: 0.1, maxOutputTokens: 8192, responseMimeType: "application/json" }
     }),
     signal: AbortSignal.timeout(60_000)
   });
