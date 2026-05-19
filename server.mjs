@@ -9,12 +9,21 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHmac } from "node:crypto";
+import nodemailer from "nodemailer";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import crypto from "node:crypto";
 
 const PORT = process.env.PORT || 8080;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.5-flash";
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
+const SMTP_HOST     = process.env.SMTP_HOST     || "smtp.gmail.com";
+const SMTP_PORT     = parseInt(process.env.SMTP_PORT || "587");
+const SMTP_USER     = process.env.SMTP_USER     || "";
+const SMTP_PASS     = process.env.SMTP_PASS     || "";
+const FROM_EMAIL    = process.env.FROM_EMAIL    || "support@prontopc.online";
+const DOWNLOAD_URL  = process.env.DOWNLOAD_URL  || "https://prontopc.online/download/pronto-agent.py";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 // In-memory for MVP. Cloud Run min-instances=1 keeps this alive.
@@ -236,6 +245,136 @@ function handleProgressGet(req, res, session) {
 // ─── Server ──────────────────────────────────────────────────────────────────
 
 
+// ─── Stripe webhook ───────────────────────────────────────────────────────────
+
+function verifyStripeSignature(rawBody, sigHeader) {
+  if (!STRIPE_WEBHOOK_SECRET) return true; // skip verification in dev
+  const parts = sigHeader.split(",").reduce((acc, part) => {
+    const [k, v] = part.split("=");
+    acc[k] = v;
+    return acc;
+  }, {});
+  const timestamp = parts["t"];
+  const sig = parts["v1"];
+  if (!timestamp || !sig) return false;
+  const payload = `${timestamp}.${rawBody}`;
+  const expected = createHmac("sha256", STRIPE_WEBHOOK_SECRET)
+    .update(payload, "utf8")
+    .digest("hex");
+  return expected === sig;
+}
+
+async function sendDeliveryEmail(customerEmail, customerName) {
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS }
+  });
+
+  const displayName = customerName || "there";
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#FDFAF4;margin:0;padding:0}
+.wrap{max-width:580px;margin:40px auto;background:#fff;border:1px solid #E2DBD0;border-radius:12px;overflow:hidden}
+.header{background:#C8892A;padding:28px 36px}
+.header h1{font-family:Georgia,serif;color:#fff;margin:0;font-size:1.5rem;font-weight:700;letter-spacing:-0.3px}
+.header p{color:rgba(255,255,255,.85);margin:4px 0 0;font-size:.9rem}
+.body{padding:32px 36px}
+.body p{color:#3A3835;font-size:.97rem;line-height:1.7;margin:0 0 16px}
+.body strong{color:#1A1917}
+.btn-wrap{text-align:center;margin:28px 0}
+.btn{display:inline-block;background:#C8892A;color:#fff;text-decoration:none;font-weight:600;font-size:1rem;padding:14px 36px;border-radius:10px;letter-spacing:-.2px}
+.steps{background:#F5F0E8;border-radius:8px;padding:20px 24px;margin:20px 0}
+.steps h3{font-size:.85rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6B6560;margin:0 0 12px}
+.step{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.step-num{width:22px;height:22px;border-radius:50%;background:#C8892A;color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step p{margin:0;font-size:.88rem;color:#3A3835;line-height:1.5}
+.footer{border-top:1px solid #E2DBD0;padding:20px 36px;text-align:center}
+.footer p{font-size:.78rem;color:#9B9590;margin:0;line-height:1.6}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>Pronto PC — You're all set.</h1>
+    <p>Your payment is confirmed. Your repair is ready to run.</p>
+  </div>
+  <div class="body">
+    <p>Hi ${displayName},</p>
+    <p>Thank you for choosing Pronto PC. Your $39 payment has been confirmed and your repair agent is ready to download.</p>
+    <div class="btn-wrap">
+      <a href="${DOWNLOAD_URL}" class="btn">Download Pronto PC Agent →</a>
+    </div>
+    <div class="steps">
+      <h3>What happens next</h3>
+      <div class="step"><div class="step-num">1</div><p><strong>Download and run</strong> the agent on the Windows PC you want repaired.</p></div>
+      <div class="step"><div class="step-num">2</div><p><strong>The agent scans</strong> your system and sends your diagnostic data to our AI engine.</p></div>
+      <div class="step"><div class="step-num">3</div><p><strong>We show you</strong> exactly what we found and what we'll fix before anything changes.</p></div>
+      <div class="step"><div class="step-num">4</div><p><strong>Repairs run</strong> automatically. A full audit report is saved to your Desktop when done.</p></div>
+    </div>
+    <p>If we detect any hardware issues during your scan, you will also receive a <strong>Hardware Findings Report</strong> formatted for a technician — at no extra charge.</p>
+    <p>Your download link is valid for 30 days. If you have any trouble, reply to this email or contact <a href="mailto:support@prontopc.online" style="color:#C8892A">support@prontopc.online</a>.</p>
+    <p>— The Pronto PC Team<br><span style="color:#6B6560;font-size:.88rem">5D Service Solutions Global LLC · Lake Havasu City, AZ</span></p>
+  </div>
+  <div class="footer">
+    <p>This is a transactional email confirming your purchase.<br>Pronto PC · prontopc.online · support@prontopc.online</p>
+  </div>
+</div>
+</body></html>`;
+
+  await transporter.sendMail({
+    from: `"Pronto PC" <${FROM_EMAIL}>`,
+    to: customerEmail,
+    subject: "Your Pronto PC repair agent is ready to download",
+    html
+  });
+
+  console.log(`[webhook] Delivery email sent to ${customerEmail}`);
+}
+
+async function handleStripeWebhook(req, res) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const rawBody = Buffer.concat(chunks).toString("utf8");
+  const sig = req.headers["stripe-signature"] || "";
+
+  if (!verifyStripeSignature(rawBody, sig)) {
+    console.warn("[webhook] Signature verification failed");
+    return json(res, 400, { ok: false, error: "Invalid signature" });
+  }
+
+  let event;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return json(res, 400, { ok: false, error: "Invalid JSON" });
+  }
+
+  console.log(`[webhook] Event: ${event.type}`);
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data?.object;
+    const email = session?.customer_details?.email || session?.customer_email;
+    const name  = session?.customer_details?.name  || "";
+    const paid  = session?.payment_status === "paid";
+
+    if (email && paid) {
+      try {
+        await sendDeliveryEmail(email, name);
+      } catch (e) {
+        console.error("[webhook] Email failed:", e.message);
+        // Don't return error — Stripe would retry. Log and continue.
+      }
+    } else {
+      console.warn(`[webhook] Skipped email — email: ${email}, paid: ${paid}`);
+    }
+  }
+
+  return json(res, 200, { ok: true, received: true });
+}
+
 function serveHtml(res, filename) {
   const filePath = path.join(__dirname, filename);
   try {
@@ -269,6 +408,7 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
+    if (method === "POST" && pathname === "/webhook") return await handleStripeWebhook(req, res);
     if (method === "GET" && pathname === "/terms") return serveHtml(res, "terms.html");
     if (method === "GET" && pathname === "/report") return serveHtml(res, "confirm.html");
     if (method === "POST" && pathname === "/api/repair-plan") return await handleRepairPlan(req, res);
