@@ -258,10 +258,10 @@ function verifyStripeSignature(rawBody, sigHeader) {
   const sig = parts["v1"];
   if (!timestamp || !sig) return false;
   const payload = `${timestamp}.${rawBody}`;
-  const rawSecret = STRIPE_WEBHOOK_SECRET.startsWith("whsec_")
+  const signingKey = STRIPE_WEBHOOK_SECRET.startsWith("whsec_")
     ? STRIPE_WEBHOOK_SECRET.slice(6)
     : STRIPE_WEBHOOK_SECRET;
-  const expected = createHmac("sha256", Buffer.from(rawSecret, "base64"))
+  const expected = createHmac("sha256", signingKey)
     .update(payload, "utf8")
     .digest("hex");
   return expected === sig;
