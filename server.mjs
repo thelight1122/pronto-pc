@@ -393,8 +393,8 @@ const server = http.createServer(async (req, res) => {
 
     if (method === "GET" && pathname === "/test-email") {
       try {
-        await sendDeliveryEmail(SMTP_USER, "Tracey");
-        return json(res, 200, { ok: true, message: "Test email sent to " + SMTP_USER });
+        await sendDeliveryEmail("traceyp@5dssg.com", "Tracey");
+        return json(res, 200, { ok: true, message: "Test email sent to traceyp@5dssg.com" });
       } catch(e) {
         return json(res, 500, { ok: false, error: e.message });
       }
