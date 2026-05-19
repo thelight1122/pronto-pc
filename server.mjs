@@ -394,6 +394,14 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
+    if (method === "GET" && pathname === "/test-email") {
+      try {
+        await sendDeliveryEmail(SMTP_USER, "Tracey");
+        return json(res, 200, { ok: true, message: "Test email sent to " + SMTP_USER });
+      } catch(e) {
+        return json(res, 500, { ok: false, error: e.message });
+      }
+    }
     if (method === "POST" && pathname === "/webhook") return await handleStripeWebhook(req, res);
     if (method === "GET" && pathname === "/terms") return serveHtml(res, "terms.html");
     if (method === "GET" && pathname === "/report") return serveHtml(res, "confirm.html");
