@@ -277,7 +277,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#FDFAF4;margin:0;p
   </div>
   <div class="body">
     <p>Hi ${displayName},</p>
-    <p>Thank you for choosing Pronto PC. Your $39 payment has been confirmed and your repair agent is ready to download.</p>
+    <p>Thank you for choosing Pronto PC. Your $29 payment has been confirmed and your repair agent is ready to download.</p>
     <div class="btn-wrap">
       <a href="${DOWNLOAD_URL}" class="btn">Download Pronto PC Agent →</a>
     </div>
@@ -290,7 +290,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#FDFAF4;margin:0;p
     </div>
     <p>If we detect any hardware issues during your scan, you will also receive a <strong>Hardware Findings Report</strong> formatted for a technician — at no extra charge.</p>
     <p>Your download link is valid for 30 days. If you have any trouble, reply to this email or contact <a href="mailto:support@prontopc.online" style="color:#C8892A">support@prontopc.online</a>.</p>
-    <p>— The Pronto PC Team<br><span style="color:#6B6560;font-size:.88rem">5D Service Solutions Global LLC · Lake Havasu City, AZ</span></p>
+    <p>— The Pronto PC Team<br><span style="color:#6B6560;font-size:.88rem">5D Service Solutions Global LLC · Parker, AZ, La Paz County</span></p>
   </div>
   <div class="footer">
     <p>This is a transactional email confirming your purchase.<br>Pronto PC · prontopc.online · support@prontopc.online</p>
@@ -341,7 +341,12 @@ async function handleStripeWebhook(req, res) {
     const session = event.data?.object;
     const email = session?.customer_details?.email || session?.customer_email;
     const name  = session?.customer_details?.name  || "";
-    const paid  = session?.payment_status === "paid";
+    // A 100%-off promo (e.g. the MS cert code MSCERT2026) completes as
+    // "no_payment_required", not "paid" — treat both as fulfilled so the
+    // delivery email still sends to the certification tester and any future
+    // fully-discounted order.
+    const paid  = session?.payment_status === "paid"
+      || session?.payment_status === "no_payment_required";
 
     if (email && paid) {
       try {
